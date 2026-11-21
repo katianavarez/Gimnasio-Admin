@@ -1,5 +1,13 @@
 <a routerLink="/clases"><- Cancelar</a>
 
+@if(erroresServidor().length) {
+    <div class="aviso aviso--error">
+        @for(e of erroresServidor(); track e) {
+            <div>{{ e }}</div>
+        }
+    </div>
+}
+
 <form class="tarjeta formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
     <div class="campo">
         <label for="nombre">Nombre</label>
@@ -60,14 +68,10 @@
     </div>
 
     <div class="acciones">
-        <button class="boton" type="submit">Guardar</button>
+        <button class="boton" type="submit" [disabled]="guardando()">{{ guardando()? 'Guardando...': 'Guardar'}}</button>
+        @if (id()) {
+            <button class="boton boton--peligro" type="button" (click)="eliminar()" [disabled]="guardando()">Eliminar</button>
+        }
     </div>
 
 </form>
-
-@if(lista(); as datos) {
-    <div class="aviso" style="margin-top: 1rem;">
-        El formulario es válido. Esto se mandaría a la API.
-        <pre>{{ datos | json }}</pre>
-    </div>
-}
