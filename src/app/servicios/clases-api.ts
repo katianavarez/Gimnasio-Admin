@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
-import { Clase, ClaseConHorarios, ClaseNueva, Sobre } from '../modelos/clase';
+import { Clase, ClaseNueva, Sobre } from '../modelos/clase';
 import { API_URL } from '../config';
 import { map } from 'rxjs';
 
@@ -9,7 +9,7 @@ export class ClasesApi {
     private readonly http = inject(HttpClient);
 
     obtener(id: number) {
-        return this.http.get<Sobre<ClaseConHorarios>>(`${API_URL}/clases/${id}`).pipe(map((r) => r.data));
+        return this.http.get<Sobre<Clase>>(`${API_URL}/clases/${id}`).pipe(map((r) => r.data));
     }
 
     crear(datos: ClaseNueva) {
@@ -21,6 +21,11 @@ export class ClasesApi {
     }
 
     eliminar(id: number) {
-        return this.http.delete(`${API_URL}/clases/${id}`);
+        return this.http.delete<Sobre<Clase>>(`${API_URL}/clases/${id}`);
+    }
+
+    listar(q = '') {
+        const params = q ? { q }: undefined;
+        return this.http.get<Sobre<Clase[]>>(`${API_URL}/clases`, {params}).pipe(map((r) => r.data));
     }
 }

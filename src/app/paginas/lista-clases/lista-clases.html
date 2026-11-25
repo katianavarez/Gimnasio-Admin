@@ -27,6 +27,13 @@
 </div>
 -->
 
+<div class="buscador">
+    <input type="search" [formControl]="busqueda" placeholder="Buscar por nombre: yoga, box">
+    <span class="buscador__estado">
+        @if(catalogo.cargando()) { buscando... }
+    </span>
+</div>
+
 <app-filtro-categoria>
 
 </app-filtro-categoria>
@@ -52,13 +59,17 @@
         }
     </div>
 
-    @if(catalogo.seleccionada(); as c){
+    
     <aside class="tarjeta lateral">
+        @if(catalogo.seleccionada(); as c){
         <img [src]="apiUrl + c.imagen" [alt]="c.nombre">
         <h2>{{c.nombre}}</h2>
         <p>{{c.descripcion}}</p>
-        <a class="boton" [routerLink]="['/clases', c.id, 'editar']">Editar</a>
+        <div class="acciones">
+            <a class="boton" [routerLink]="['/clases', c.id, 'editar']">Editar</a>
+            <button (click)="eliminar(c.id)">Eliminar</button>
+        </div>
+        }
     </aside>
-    }
 </div>
 }
