@@ -1,12 +1,17 @@
-import { computed, Service, signal } from '@angular/core';
+import { computed, inject, Service, signal } from '@angular/core';
 import { CLASES_LOCALES } from '../datos/clases-locales';
 import { Categoria, Clase, Sobre } from '../modelos/clase';
 import { httpResource } from '@angular/common/http';
 import { API_URL } from '../config';
 import { mensajeDeApi } from './errores';
+import { BehaviorSubject, catchError, map, of, startWith, switchMap } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ClasesApi } from './clases-api';
 
 @Service()
 export class Catalogo {
+
+    private readonly api = inject(ClasesApi);
 
     private readonly recurso = httpResource<Sobre<Clase[]>>(() => `${API_URL}/clases`)
 
@@ -22,6 +27,10 @@ export class Catalogo {
     readonly categoria = signal<Categoria | 'todas'>("todas");
 
     readonly seleccionada = signal<Clase | null>(null);
+
+    private readonly _texto = signal('');
+
+    readonly texto = this._texto.asReadonly();
 
     // derivada
     readonly visibles = computed(() => {
@@ -46,8 +55,40 @@ export class Catalogo {
         this.seleccionada.update((actual) => (actual?.id === clase.id ? null : clase)) 
     }
 
+    // recargar(): void {
+    //     this.seleccionada.set(null);
+    //     this.recurso.reload();
+    // }
+
+    private readonly busquedas = new BehaviorSubject<string>('');
+
+    private readonly resultado = toSignal(
+        this.busquedas.pipe(
+            switchMap((q) => 
+                this.api.listar(q).pipe(
+                    map((clases): Resultado => ({cargando : false, error : null, clases})),
+                    catchError((e) => of<Resultado>({cargando: false, error: mensajeDeApi(e), clases: []})),
+                    startWith<Resultado>({cargando: true, error: null, clases: []})
+                )
+            )
+        ),
+        {initialValue: {cargando: true, error: null, clases: []}}
+    );
+
+    buscar(texto: string): void {
+        this._texto.set(texto),
+        this.seleccionada.set(null),
+        this.busquedas.next(texto)
+    }
+
     recargar(): void {
         this.seleccionada.set(null);
-        this.recurso.reload();
+        this.busquedas.next(this.busquedas.value);
     }
+}
+
+interface Resultado {
+    cargando: boolean;
+    error: string | null;
+    clases: Clase[];
 }

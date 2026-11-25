@@ -49,7 +49,7 @@ export class FormularioClase implements OnInit {
 
     this.api.obtener(Number(id)).subscribe({
       next: (clase) => this.form.patchValue(clase),
-      error: (e: HttpErrorResponse) => this.erroresServidor.set([mensajeDeApi(e)])
+      error: (e) => this.erroresServidor.set([mensajeDeApi(e)])
     });
   }
 
