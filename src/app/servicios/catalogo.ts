@@ -13,16 +13,13 @@ export class Catalogo {
 
     private readonly api = inject(ClasesApi);
 
-    private readonly recurso = httpResource<Sobre<Clase[]>>(() => `${API_URL}/clases`)
+    // private readonly recurso = httpResource<Sobre<Clase[]>>(() => `${API_URL}/clases`)
 
-    private readonly clases = computed(() => this.recurso.value()?.data ?? []);
+    private readonly clases = computed(() => this.resultado().clases);
 
-    readonly cargando = computed(() => this.recurso.isLoading());
+    readonly cargando = computed(() => this.resultado().cargando);
 
-    readonly error = computed(() => {
-        const e = this.recurso.error();
-        return e ? mensajeDeApi(e) : null;
-    })
+    readonly error = computed(() => this.resultado().error);
 
     readonly categoria = signal<Categoria | 'todas'>("todas");
 
